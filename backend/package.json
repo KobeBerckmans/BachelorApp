@@ -1,0 +1,11 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "start:all": "concurrently \"node register.js\" \"node coordinator-login.js\""
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}

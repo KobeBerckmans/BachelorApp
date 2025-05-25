@@ -19,13 +19,13 @@ export default function LandingScreen() {
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={[styles.button, { backgroundColor: '#E2725B' }]}
-                        onPress={() => router.push('/(tabs)')}
+                        onPress={() => router.push('/(tabs)/login')}
                     >
                         <Text style={styles.buttonText}>Vrijwilliger</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.button, { backgroundColor: '#CEF5CD' }]}
-                        onPress={() => router.push('/(tabs)')}
+                        onPress={() => router.push('/coordinator-login')}
                     >
                         <Text style={[styles.buttonText, { color: '#222' }]}>Coordinator</Text>
                     </TouchableOpacity>
