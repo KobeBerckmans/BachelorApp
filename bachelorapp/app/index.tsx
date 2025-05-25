@@ -19,7 +19,7 @@ export default function LandingScreen() {
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={[styles.button, { backgroundColor: '#E2725B' }]}
-                        onPress={() => router.push('/(tabs)/login')}
+                        onPress={() => router.push('/screens/login')}
                     >
                         <Text style={styles.buttonText}>Vrijwilliger</Text>
                     </TouchableOpacity>

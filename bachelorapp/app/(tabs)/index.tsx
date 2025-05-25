@@ -1,75 +1,144 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React, { useEffect, useState } from 'react';
+import { ImageBackground, Image, StyleSheet, View, TouchableOpacity, Text, Platform, FlatList, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { API_BASE_URL } from '../../constants/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const [role, setRole] = useState<string | null>(null);
+  const [helpRequests, setHelpRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const userStr = await AsyncStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setRole(user.role);
+      } else {
+        setRole(null);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/help-requests`)
+      .then(res => res.json())
+      .then(data => setHelpRequests(data))
+      .catch(() => setHelpRequests([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
+    <ImageBackground
+      source={require('../../assets/images/administratie.jpeg')}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          source={require('../../assets/images/BVB-Transparant copy.png')}
+          style={styles.logo}
+          resizeMode="contain"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {role === 'coordinator' && (
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: '#E2725B', marginBottom: 24 }]}
+            onPress={() => router.push('/dashboard')}
+          >
+            <Text style={styles.buttonText}>Dashboard</Text>
+          </TouchableOpacity>
+        )}
+        <Text style={styles.helpTitle}>Hulpaanvragen</Text>
+        {loading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <FlatList
+            data={helpRequests}
+            keyExtractor={(_, i) => i.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.helpCard}>
+                <Text style={styles.helpName}>{item.naam}</Text>
+                <Text>Soort: {item.soort}</Text>
+                <Text>Bericht: {item.bericht}</Text>
+                <Text>Datum: {item.datum}</Text>
+                <Text>Adres: {item.adres}</Text>
+                <Text>Uur: {item.uur}</Text>
+              </View>
+            )}
+            style={{ width: '100%' }}
+          />
+        )}
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  background: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    width: '100%',
+    height: '100%',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  overlay: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingHorizontal: 24,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  logo: {
+    width: 220,
+    height: 120,
+    marginBottom: 40,
+    ...Platform.select({
+      android: { marginTop: 40 },
+      ios: { marginTop: 40 },
+    }),
+  },
+  button: {
+    width: 220,
+    paddingVertical: 18,
+    borderRadius: 32,
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 22,
+    fontFamily: 'Cocogoose',
+    letterSpacing: 1,
+  },
+  helpTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    marginTop: 16,
+  },
+  helpCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  helpName: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 4,
   },
 });

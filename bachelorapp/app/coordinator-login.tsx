@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../constants/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CoordinatorLoginScreen() {
     const [email, setEmail] = useState('');
@@ -19,7 +20,8 @@ export default function CoordinatorLoginScreen() {
             });
             const data = await res.json();
             if (res.ok && data.role === 'coordinator') {
-                router.push('/dashboard?token=' + data.token);
+                await AsyncStorage.setItem('user', JSON.stringify(data));
+                router.replace('/(tabs)');
             } else {
                 Alert.alert('Error', data.error || 'Invalid credentials');
             }
