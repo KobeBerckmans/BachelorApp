@@ -10,7 +10,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    Cocogoose: require('../assets/fonts/Cocogoose-Pro-Letterpress-Regular-trial.ttf'),
+    CocogooseProTrial: require('../assets/fonts/Cocogoose-Pro-Regular-trial.ttf'),
+    Montserrat: require('../assets/fonts/Montserrat-Regular.ttf'),
   });
 
   if (!loaded) {

@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: 'bold',
         marginBottom: 24,
-        fontFamily: 'Cocogoose',
+        fontFamily: 'CocogooseProTrial',
         color: '#222',
     },
     sectionTitle: {
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     acceptButtonText: {
         color: '#222',
         fontSize: 16,
-        fontFamily: 'Cocogoose',
+        fontFamily: 'CocogooseProTrial',
         fontWeight: 'bold',
         letterSpacing: 1,
     },
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     addButtonText: {
         color: '#fff',
         fontSize: 18,
-        fontFamily: 'Cocogoose',
+        fontFamily: 'CocogooseProTrial',
         letterSpacing: 1,
         fontWeight: 'bold',
     },

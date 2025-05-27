@@ -57,6 +57,12 @@ export default function LoginScreen() {
             >
                 <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Login'}</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.registerButton}
+                onPress={() => router.push('/screens/register')}
+            >
+                <Text style={styles.registerButtonText}>Register</Text>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -101,7 +107,26 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#fff',
         fontSize: 20,
-        fontFamily: 'Cocogoose',
+        fontFamily: 'CocogooseProTrial',
+        letterSpacing: 1,
+    },
+    registerButton: {
+        width: 220,
+        paddingVertical: 14,
+        borderRadius: 32,
+        alignItems: 'center',
+        backgroundColor: '#CEF5CD',
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.10,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    registerButtonText: {
+        color: '#222',
+        fontSize: 18,
+        fontFamily: 'CocogooseProTrial',
         letterSpacing: 1,
     },
 }); 

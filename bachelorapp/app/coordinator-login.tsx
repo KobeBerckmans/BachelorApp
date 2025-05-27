@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#fff',
         fontSize: 20,
-        fontFamily: 'Cocogoose',
+        fontFamily: 'CocogooseProTrial',
         letterSpacing: 1,
     },
 }); 
