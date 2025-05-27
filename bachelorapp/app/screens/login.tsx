@@ -63,6 +63,9 @@ export default function LoginScreen() {
             >
                 <Text style={styles.registerButtonText}>Register</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/')}>
+                <Text style={styles.secondaryButtonText}>Terug naar Home</Text>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -73,7 +76,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 24,
-        backgroundColor: '#fff',
+        backgroundColor: '#F4FBF5',
     },
     title: {
         fontSize: 24,
@@ -100,9 +103,9 @@ const styles = StyleSheet.create({
         marginTop: 8,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowOpacity: 0.13,
+        shadowRadius: 8,
+        elevation: 4,
     },
     buttonText: {
         color: '#fff',
@@ -119,11 +122,30 @@ const styles = StyleSheet.create({
         marginTop: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.10,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowOpacity: 0.13,
+        shadowRadius: 8,
+        elevation: 4,
     },
     registerButtonText: {
+        color: '#222',
+        fontSize: 18,
+        fontFamily: 'CocogooseProTrial',
+        letterSpacing: 1,
+    },
+    secondaryButton: {
+        width: 220,
+        paddingVertical: 14,
+        borderRadius: 32,
+        alignItems: 'center',
+        backgroundColor: '#CEF5CD',
+        marginTop: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.13,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    secondaryButtonText: {
         color: '#222',
         fontSize: 18,
         fontFamily: 'CocogooseProTrial',

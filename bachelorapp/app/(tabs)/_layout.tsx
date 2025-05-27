@@ -15,7 +15,13 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
+        headerShown: true,
+        headerTitleAlign: 'center',
+        headerTitleStyle: {
+          fontFamily: 'CocogooseProTrial',
+          fontSize: 22,
+          color: '#E2725B',
+        },
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -30,6 +36,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
+          headerTitle: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
@@ -37,6 +44,7 @@ export default function TabLayout() {
         name="bevestigd"
         options={{
           title: 'Bevestigd',
+          headerTitle: 'Bevestigd',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="checkmark.seal.fill" color={color} />,
         }}
       />
@@ -44,6 +52,7 @@ export default function TabLayout() {
         name="logout"
         options={{
           title: 'Log out',
+          headerTitle: 'Log out',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
