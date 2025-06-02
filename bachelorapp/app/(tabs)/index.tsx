@@ -20,8 +20,9 @@ export default function HomeScreen() {
   const [selectedSoort, setSelectedSoort] = useState<string | null>(null);
   const [selectedDatum, setSelectedDatum] = useState<string | null>(null);
   const [selectedUur, setSelectedUur] = useState<string | null>(null);
+  const [selectedContrei, setSelectedContrei] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [filterModal, setFilterModal] = useState<null | 'soort' | 'datum' | 'uur'>(null);
+  const [filterModal, setFilterModal] = useState<null | 'soort' | 'datum' | 'uur' | 'contrei'>(null);
 
   useEffect(() => {
     (async () => {
@@ -80,16 +81,17 @@ export default function HomeScreen() {
     if (selectedSoort && item.soort !== selectedSoort) return false;
     if (selectedDatum && item.datum !== selectedDatum) return false;
     if (selectedUur && item.uur !== selectedUur) return false;
+    if (selectedContrei && item.contrei !== selectedContrei) return false;
     return true;
   });
 
   // Unieke waardes voor filters
   const datumOpties = uniqueValues(helpRequests, 'datum');
   const uurOpties = uniqueValues(helpRequests, 'uur');
+  const contreiOpties = uniqueValues(helpRequests, 'contrei');
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logoText}>BVB</Text>
       {role === 'coordinator' && (
         <TouchableOpacity
           style={[styles.button, { backgroundColor: '#E2725B', marginBottom: 18 }]}
@@ -100,52 +102,59 @@ export default function HomeScreen() {
       )}
       <Text style={styles.helpTitle}>Hulpaanvragen</Text>
       {/* Nieuwe filterbalk */}
-      <View style={styles.filterBarModern}>
-        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 8 }}>
-          <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModal('soort')}>
-            <Text style={styles.filterBtnText}>{selectedSoort ? selectedSoort : 'Soort'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModal('datum')}>
-            <Text style={styles.filterBtnText}>{selectedDatum ? selectedDatum : 'Datum'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModal('uur')}>
-            <Text style={styles.filterBtnText}>{selectedUur ? selectedUur : 'Uur'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.clearFilters} onPress={() => { setSelectedSoort(null); setSelectedDatum(null); setSelectedUur(null); }}>
-            <Text style={styles.clearFiltersText}>Reset</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingRight: 16 }} style={{ marginBottom: 8 }}>
+        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModal('soort')}>
+          <Text style={styles.filterBtnText}>{selectedSoort ? selectedSoort : 'Soort'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModal('datum')}>
+          <Text style={styles.filterBtnText}>{selectedDatum ? selectedDatum : 'Datum'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModal('uur')}>
+          <Text style={styles.filterBtnText}>{selectedUur ? selectedUur : 'Uur'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModal('contrei')}>
+          <Text style={styles.filterBtnText}>{selectedContrei ? selectedContrei : 'Contrei'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.clearFilters} onPress={() => { setSelectedSoort(null); setSelectedDatum(null); setSelectedUur(null); setSelectedContrei(null); }}>
+          <Text style={styles.clearFiltersText}>Reset</Text>
+        </TouchableOpacity>
+      </ScrollView>
+      {/* Modal voor filteropties */}
+      <Modal visible={!!filterModal} transparent animationType="fade">
+        <Pressable style={styles.modalOverlay} onPress={() => setFilterModal(null)} />
+        <View style={styles.modalBox}>
+          <Text style={styles.modalTitle}>Kies {filterModal}</Text>
+          {filterModal === 'soort' && SOORTEN.map(soort => (
+            <TouchableOpacity key={soort} style={styles.modalOption} onPress={() => { setSelectedSoort(soort); setFilterModal(null); }}>
+              <Text style={styles.modalOptionText}>{soort.charAt(0).toUpperCase() + soort.slice(1)}</Text>
+            </TouchableOpacity>
+          ))}
+          {filterModal === 'datum' && datumOpties.map(datum => (
+            <TouchableOpacity key={String(datum)} style={styles.modalOption} onPress={() => { setSelectedDatum(String(datum)); setFilterModal(null); }}>
+              <Text style={styles.modalOptionText}>{String(datum)}</Text>
+            </TouchableOpacity>
+          ))}
+          {filterModal === 'uur' && uurOpties.map(uur => (
+            <TouchableOpacity key={String(uur)} style={styles.modalOption} onPress={() => { setSelectedUur(String(uur)); setFilterModal(null); }}>
+              <Text style={styles.modalOptionText}>{String(uur)}</Text>
+            </TouchableOpacity>
+          ))}
+          {filterModal === 'contrei' && contreiOpties.map(contrei => (
+            <TouchableOpacity key={String(contrei)} style={styles.modalOption} onPress={() => { setSelectedContrei(String(contrei)); setFilterModal(null); }}>
+              <Text style={styles.modalOptionText}>{String(contrei)}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={styles.modalOption} onPress={() => {
+            if (filterModal === 'soort') setSelectedSoort(null);
+            if (filterModal === 'datum') setSelectedDatum(null);
+            if (filterModal === 'uur') setSelectedUur(null);
+            if (filterModal === 'contrei') setSelectedContrei(null);
+            setFilterModal(null);
+          }}>
+            <Text style={[styles.modalOptionText, { color: '#E2725B' }]}>Wis selectie</Text>
           </TouchableOpacity>
         </View>
-        {/* Modal voor filteropties */}
-        <Modal visible={!!filterModal} transparent animationType="fade">
-          <Pressable style={styles.modalOverlay} onPress={() => setFilterModal(null)} />
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Kies {filterModal}</Text>
-            {filterModal === 'soort' && SOORTEN.map(soort => (
-              <TouchableOpacity key={soort} style={styles.modalOption} onPress={() => { setSelectedSoort(soort); setFilterModal(null); }}>
-                <Text style={styles.modalOptionText}>{soort.charAt(0).toUpperCase() + soort.slice(1)}</Text>
-              </TouchableOpacity>
-            ))}
-            {filterModal === 'datum' && datumOpties.map(datum => (
-              <TouchableOpacity key={String(datum)} style={styles.modalOption} onPress={() => { setSelectedDatum(String(datum)); setFilterModal(null); }}>
-                <Text style={styles.modalOptionText}>{String(datum)}</Text>
-              </TouchableOpacity>
-            ))}
-            {filterModal === 'uur' && uurOpties.map(uur => (
-              <TouchableOpacity key={String(uur)} style={styles.modalOption} onPress={() => { setSelectedUur(String(uur)); setFilterModal(null); }}>
-                <Text style={styles.modalOptionText}>{String(uur)}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={styles.modalOption} onPress={() => {
-              if (filterModal === 'soort') setSelectedSoort(null);
-              if (filterModal === 'datum') setSelectedDatum(null);
-              if (filterModal === 'uur') setSelectedUur(null);
-              setFilterModal(null);
-            }}>
-              <Text style={[styles.modalOptionText, { color: '#E2725B' }]}>Wis selectie</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      </View>
+      </Modal>
       {loading ? (
         <ActivityIndicator size="large" color="#E2725B" />
       ) : (
@@ -180,10 +189,22 @@ export default function HomeScreen() {
                   <Text style={styles.helpValue}>{item.uur}</Text>
                 </View>
               </View>
-              <Text style={styles.helpLabel}>Adres:</Text>
-              <Text style={styles.helpValue}>{item.adres}</Text>
-              <Text style={styles.helpLabel}>Bericht:</Text>
-              <Text style={styles.helpValue}>{item.bericht}</Text>
+              {item.adres && (<>
+                <Text style={styles.helpLabel}>Adres:</Text>
+                <Text style={styles.helpValue}>{item.adres}</Text>
+              </>)}
+              {(!item.adres && (item.straat || item.nummer || item.gemeente)) && (<>
+                <Text style={styles.helpLabel}>Adres:</Text>
+                <Text style={styles.helpValue}>{[item.straat, item.nummer, item.gemeente].filter(Boolean).join(' ')}</Text>
+              </>)}
+              {item.bericht && (<>
+                <Text style={styles.helpLabel}>Bericht:</Text>
+                <Text style={styles.helpValue}>{item.bericht}</Text>
+              </>)}
+              {item.contrei && (<>
+                <Text style={styles.helpLabel}>Contrei:</Text>
+                <Text style={styles.helpValue}>{item.contrei}</Text>
+              </>)}
               {role === 'coordinator' && item.acceptedBy && (
                 <View style={styles.acceptedByBox}>
                   <Text style={styles.acceptedByText}>
@@ -193,8 +214,8 @@ export default function HomeScreen() {
               )}
             </View>
           )}
-          style={{ width: '100%' }}
-          contentContainerStyle={{ paddingBottom: 24 }}
+          style={{ width: '100%', marginTop: 16 }}
+          contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 0 }}
         />
       )}
     </View>
@@ -207,7 +228,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F4FBF5',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? 48 : 64,
+    paddingTop: 16,
   },
   logoText: {
     fontFamily: 'CocogooseProTrial',
@@ -247,15 +268,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 2,
     gap: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   pill: {
     backgroundColor: '#f0f0f0',
     borderRadius: 20,
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 18,
     borderWidth: 1,
     borderColor: '#E2725B22',
     marginRight: 2,
+    height: 44,
   },
   pillActive: {
     backgroundColor: '#E2725B',
@@ -288,9 +313,11 @@ const styles = StyleSheet.create({
   helpCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 8,
-    marginBottom: 8,
+    padding: 4,
+    marginBottom: 6,
     width: '100%',
+    maxWidth: 500,
+    alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.13,
@@ -320,14 +347,15 @@ const styles = StyleSheet.create({
   },
   helpLabel: {
     fontFamily: 'Montserrat',
-    fontSize: 11,
+    fontSize: 10,
     color: '#888',
     marginTop: 2,
     marginBottom: 0,
   },
   helpValue: {
     fontFamily: 'Montserrat',
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '500',
     color: '#222',
     marginBottom: 1,
   },
@@ -364,7 +392,7 @@ const styles = StyleSheet.create({
   filterBtn: {
     backgroundColor: '#fff',
     borderRadius: 18,
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 18,
     borderWidth: 1,
     borderColor: '#E2725B22',
@@ -376,6 +404,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 2,
     elevation: 1,
+    height: 44,
   },
   filterBtnText: {
     color: '#E2725B',
