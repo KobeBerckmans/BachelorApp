@@ -152,5 +152,93 @@ app.post('/api/add-coordinator', async (req, res) => {
   }
 });
 
+// Volunteer login endpoint
+app.post('/api/volunteer-login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required.' });
+  }
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('bachelorapp');
+    const users = db.collection('users');
+    const user = await users.findOne({ email, role: 'volunteer', accepted: true });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials or not a volunteer.' });
+    }
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid credentials.' });
+    }
+    res.json({ token: 'dummy-token', role: 'volunteer', email: user.email, userId: user._id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// Volunteer accept help request endpoint
+app.post('/api/accept-help-request', async (req, res) => {
+  const { requestId, volunteerId } = req.body;
+  if (!requestId || !volunteerId) {
+    return res.status(400).json({ error: 'requestId and volunteerId are required.' });
+  }
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const requests = db.collection('helpRequests');
+    const result = await requests.updateOne(
+      { _id: new ObjectId(requestId), accepted: false },
+      { $set: { accepted: true, volunteerId: new ObjectId(volunteerId) } }
+    );
+    if (result.modifiedCount === 1) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Help request not found or already accepted.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// Get all help requests
+app.get('/api/help-requests', async (req, res) => {
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const requests = db.collection('helpRequests');
+    const allRequests = await requests.find({}).toArray();
+    res.json(allRequests);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Backend API running on port ${PORT}`)); 
