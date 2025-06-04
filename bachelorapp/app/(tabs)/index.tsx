@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, FlatList, ActivityIndicator, Platform, ScrollView, Modal, Pressable } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, FlatList, ActivityIndicator, Platform, ScrollView, Modal, Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -71,6 +71,26 @@ export default function HomeScreen() {
     } finally {
       setAcceptingId(null);
     }
+  };
+
+  const handleDeleteHelpRequest = async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/help-requests/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchHelpRequests();
+      } else {
+        Alert.alert('Error', 'Kon niet verwijderen');
+      }
+    } catch {
+      Alert.alert('Error', 'Kon niet verbinden met server');
+    }
+  };
+
+  const confirmDeleteHelpRequest = (id: string) => {
+    Alert.alert('Verwijderen', 'Weet je zeker dat je deze hulpaanvraag wilt verwijderen?', [
+      { text: 'Annuleer', style: 'cancel' },
+      { text: 'Verwijder', style: 'destructive', onPress: () => handleDeleteHelpRequest(id) },
+    ]);
   };
 
   const filteredHelpRequests = helpRequests.filter(item => {
@@ -165,6 +185,11 @@ export default function HomeScreen() {
             <View style={styles.helpCard}>
               <View style={styles.helpCardRow}>
                 <Text style={styles.helpName}>{item.naam}</Text>
+                {role === 'coordinator' && (
+                  <TouchableOpacity style={styles.deleteButton} onPress={() => confirmDeleteHelpRequest(item._id)}>
+                    <Text style={styles.deleteButtonText}>×</Text>
+                  </TouchableOpacity>
+                )}
                 {role === 'volunteer' && !item.acceptedBy && (
                   <TouchableOpacity
                     style={styles.acceptButton}
@@ -448,5 +473,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#222',
     textAlign: 'center',
+  },
+  deleteButton: {
+    marginLeft: 8,
+    backgroundColor: '#F8D7DA',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.10,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  deleteButtonText: {
+    color: '#B71C1C',
+    fontSize: 18,
+    fontWeight: 'bold',
+    lineHeight: 22,
   },
 });

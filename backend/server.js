@@ -240,5 +240,169 @@ app.get('/api/help-requests', async (req, res) => {
   }
 });
 
+// Get all contacts
+app.get('/api/contacts', async (req, res) => {
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const contacts = db.collection('contacts');
+    const allContacts = await contacts.find({}).toArray();
+    res.json(allContacts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// Get all volunteers
+app.get('/api/volunteers', async (req, res) => {
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const volunteers = db.collection('volunteers');
+    const allVolunteers = await volunteers.find({}).toArray();
+    res.json(allVolunteers);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// Delete pending volunteer
+app.delete('/api/pending-volunteers/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`[DELETE] /api/pending-volunteers/${id}`);
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('bachelorapp');
+    const users = db.collection('users');
+    const result = await users.deleteOne({ _id: new ObjectId(id), role: 'volunteer', accepted: false });
+    console.log('Delete result:', result);
+    if (result.deletedCount === 1) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Pending volunteer not found' });
+    }
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// Delete contact
+app.delete('/api/contacts/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`[DELETE] /api/contacts/${id}`);
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const contacts = db.collection('contacts');
+    const result = await contacts.deleteOne({ _id: new ObjectId(id) });
+    console.log('Delete result:', result);
+    if (result.deletedCount === 1) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Contact not found' });
+    }
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// Delete volunteer
+app.delete('/api/volunteers/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`[DELETE] /api/volunteers/${id}`);
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const volunteers = db.collection('volunteers');
+    const result = await volunteers.deleteOne({ _id: new ObjectId(id) });
+    console.log('Delete result:', result);
+    if (result.deletedCount === 1) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Volunteer not found' });
+    }
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// Delete help request
+app.delete('/api/help-requests/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log(`[DELETE] /api/help-requests/${id}`);
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const requests = db.collection('helpRequests');
+    const result = await requests.deleteOne({ _id: new ObjectId(id) });
+    console.log('Delete result:', result);
+    if (result.deletedCount === 1) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Help request not found' });
+    }
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Backend API running on port ${PORT}`)); 
