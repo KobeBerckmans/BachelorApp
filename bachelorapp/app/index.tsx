@@ -1,9 +1,30 @@
-import React from 'react';
-import { ImageBackground, Image, StyleSheet, View, TouchableOpacity, Text, Platform } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { ImageBackground, Image, StyleSheet, View, TouchableOpacity, Text, Platform, Dimensions, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
+
+const screenWidth = Dimensions.get('window').width;
 
 export default function LandingScreen() {
     const router = useRouter();
+    const bounceAnim = useRef(new Animated.Value(1)).current;
+    useEffect(() => {
+        const loop = Animated.loop(
+            Animated.sequence([
+                Animated.timing(bounceAnim, {
+                    toValue: 1.15,
+                    duration: 600,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(bounceAnim, {
+                    toValue: 1,
+                    duration: 600,
+                    useNativeDriver: true,
+                }),
+            ])
+        );
+        loop.start();
+        return () => loop.stop();
+    }, [bounceAnim]);
     return (
         <ImageBackground
             source={require('../assets/images/administratie.jpeg')}
@@ -12,8 +33,8 @@ export default function LandingScreen() {
         >
             <View style={styles.overlay}>
                 <Image
-                    source={require('../assets/images/BVB-Transparant copy.png')}
-                    style={styles.logo}
+                    source={require('../assets/images/logo-zwart.png')}
+                    style={{ width: '90%', height: 140, marginBottom: 20, marginTop: 40 }}
                     resizeMode="contain"
                 />
                 <View style={styles.buttonContainer}>
@@ -30,6 +51,18 @@ export default function LandingScreen() {
                         <Text style={[styles.buttonText, { color: '#222' }]}>Coordinator</Text>
                     </TouchableOpacity>
                 </View>
+                <Animated.Text
+                    style={[
+                        styles.slogan,
+                        {
+                            transform: [
+                                { scale: bounceAnim },
+                            ],
+                        },
+                    ]}
+                >
+                    Samen maken we het verschil!
+                </Animated.Text>
             </View>
         </ImageBackground>
     );
@@ -52,8 +85,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
     },
     logo: {
-        width: 220,
-        height: 120,
         marginBottom: 60,
         ...Platform.select({
             android: { marginTop: 40 },
@@ -81,6 +112,14 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 22,
         fontFamily: 'CocogooseProTrial',
+        letterSpacing: 1,
+    },
+    slogan: {
+        marginTop: 36,
+        fontFamily: 'CocogooseProTrial',
+        fontSize: 22,
+        color: '#E2725B',
+        textAlign: 'center',
         letterSpacing: 1,
     },
 }); 
