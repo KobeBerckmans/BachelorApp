@@ -1,15 +1,27 @@
+// Login screen for volunteers.
+// Handles user input, validation, and login API call.
+
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * LoginScreen
+ * Allows a volunteer to log in with email and password.
+ * Handles form state and login logic.
+ */
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+    /**
+     * Handles the login form submission.
+     * Calls the backend API to authenticate the user.
+     */
     const handleLogin = async () => {
         setLoading(true);
         try {

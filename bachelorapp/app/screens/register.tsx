@@ -1,14 +1,26 @@
+// Registration screen for new volunteers.
+// Handles user input, validation, and registration API call.
+
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../../constants/api';
 
+/**
+ * RegisterScreen
+ * Allows a new volunteer to register with email and password.
+ * Handles form state and registration logic.
+ */
 export default function RegisterScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+    /**
+     * Handles the registration form submission.
+     * Calls the backend API to register a new volunteer.
+     */
     const handleRegister = async () => {
         setLoading(true);
         try {

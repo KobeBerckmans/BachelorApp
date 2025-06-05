@@ -1,3 +1,7 @@
+// Explore screen for browsing help requests or other content.
+// Handles data fetching and display logic.
+
+import React, { useEffect, useState } from 'react';
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
@@ -8,6 +12,11 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
+/**
+ * ExploreScreen
+ * Allows users to browse available help requests or other content.
+ * Handles data fetching and display logic.
+ */
 export default function TabTwoScreen() {
   return (
     <ParallaxScrollView

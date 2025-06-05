@@ -20,4 +20,4 @@ function getApiBaseUrl() {
     return 'http://localhost:3001';
 }
 
-export const API_BASE_URL = getApiBaseUrl(); 
+export const API_BASE_URL = "http://192.168.1.52:3001"; 

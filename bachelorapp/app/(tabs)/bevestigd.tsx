@@ -8,20 +8,26 @@ export default function BevestigdScreen() {
     const [helpRequests, setHelpRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
+    const [role, setRole] = useState<string | null>(null);
 
     const fetchHelpRequests = async () => {
         setLoading(true);
         const userStr = await AsyncStorage.getItem('user');
         let email = null;
+        let userRole = null;
         if (userStr) {
             const user = JSON.parse(userStr);
             email = user.email;
+            userRole = user.role;
             setUserEmail(email);
+            setRole(userRole);
         }
         fetch(`${API_BASE_URL}/api/help-requests`)
             .then(res => res.json())
             .then(data => {
-                if (email) {
+                if (userRole === 'coordinator') {
+                    setHelpRequests(data.filter((req: any) => req.accepted === true));
+                } else if (email) {
                     setHelpRequests(data.filter((req: any) => req.acceptedBy === email));
                 } else {
                     setHelpRequests([]);
@@ -78,24 +84,25 @@ export default function BevestigdScreen() {
                                     <Text style={styles.cancelButtonText}>{cancellingId === item._id ? '...' : 'Cancel'}</Text>
                                 </TouchableOpacity>
                             </View>
-                            <View style={styles.helpRowCompact}>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.helpLabel}>Soort:</Text>
-                                    <Text style={styles.helpValue}>{item.soort}</Text>
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.helpLabel}>Datum:</Text>
-                                    <Text style={styles.helpValue}>{item.datum}</Text>
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.helpLabel}>Uur:</Text>
-                                    <Text style={styles.helpValue}>{item.uur}</Text>
-                                </View>
+                            <View style={{ marginBottom: 4 }}>
+                                <Text style={styles.helpLabel}>Soort:</Text>
+                                <Text style={styles.helpValue}>{item.soort}</Text>
+                                <Text style={styles.helpLabel}>Datum:</Text>
+                                <Text style={styles.helpValue}>{item.datum}</Text>
+                                <Text style={styles.helpLabel}>Uur:</Text>
+                                <Text style={styles.helpValue}>{item.uur}</Text>
+                                <Text style={styles.helpLabel}>Adres:</Text>
+                                <Text style={styles.helpValue}>{item.adres}</Text>
+                                <Text style={styles.helpLabel}>Bericht:</Text>
+                                <Text style={styles.helpValue}>{item.bericht}</Text>
                             </View>
-                            <Text style={styles.helpLabel}>Adres:</Text>
-                            <Text style={styles.helpValue}>{item.adres}</Text>
-                            <Text style={styles.helpLabel}>Bericht:</Text>
-                            <Text style={styles.helpValue}>{item.bericht}</Text>
+                            {item.acceptedBy && (
+                                <View style={{ marginTop: 8, backgroundColor: '#E2725B22', borderRadius: 8, padding: 6, alignSelf: 'flex-start' }}>
+                                    <Text style={{ color: '#E2725B', fontFamily: 'Montserrat', fontSize: 13, fontWeight: 'bold' }}>
+                                        Geaccepteerd door: {item.acceptedBy}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                     )}
                     style={{ width: '100%' }}
@@ -116,11 +123,13 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'CocogooseProTrial',
-        fontSize: 26,
+        fontSize: 24,
         color: '#222',
         marginBottom: 18,
         marginTop: 8,
         letterSpacing: 1,
+        textAlign: 'center',
+        flexWrap: 'nowrap',
     },
     helpCard: {
         backgroundColor: '#fff',
@@ -128,6 +137,8 @@ const styles = StyleSheet.create({
         padding: 14,
         marginBottom: 14,
         width: '100%',
+        maxWidth: 420,
+        alignSelf: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.08,

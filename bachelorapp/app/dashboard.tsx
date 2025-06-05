@@ -1,3 +1,7 @@
+// Dashboard screen for coordinators and volunteers.
+// Shows tabs for requests, contacts, volunteers, and coordinator management.
+// Handles all main admin actions in the app.
+
 import React, { useEffect, useState } from 'react';
 import { ImageBackground, StyleSheet, View, TouchableOpacity, Text, TextInput, FlatList, Alert, Platform, Linking } from 'react-native';
 import { API_BASE_URL } from '../constants/api';
@@ -13,6 +17,11 @@ type PendingVolunteer = { _id: string; email: string };
 type Contact = { _id: string; email: string; subject: string; message: string };
 type Volunteer = { _id: string; naam: string; voornaam: string; adres: string; tel: string; mail: string; motivatie: string };
 
+/**
+ * DashboardScreen
+ * Main dashboard for coordinators and volunteers.
+ * Manages tab state, data fetching, and all admin actions.
+ */
 export default function DashboardScreen() {
     const [activeTab, setActiveTab] = useState('requests');
     const [pending, setPending] = useState<PendingVolunteer[]>([]);
@@ -26,6 +35,10 @@ export default function DashboardScreen() {
     };
     const isCoordinator = user?.role === 'coordinator';
 
+    /**
+     * Fetches all pending volunteers from the backend.
+     * Sets the 'pending' state.
+     */
     const fetchPending = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/api/pending-volunteers`);
@@ -36,6 +49,10 @@ export default function DashboardScreen() {
         }
     };
 
+    /**
+     * Fetches all contact messages from the backend.
+     * Sets the 'contacts' state.
+     */
     const fetchContacts = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/api/contacts`);
@@ -46,6 +63,10 @@ export default function DashboardScreen() {
         }
     };
 
+    /**
+     * Fetches all accepted volunteers from the backend.
+     * Sets the 'volunteers' state.
+     */
     const fetchVolunteers = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/api/volunteers`);
@@ -64,6 +85,10 @@ export default function DashboardScreen() {
         if (activeTab === 'volunteers') fetchVolunteers();
     }, [activeTab]);
 
+    /**
+     * Accepts a pending volunteer by userId.
+     * @param userId - The MongoDB _id of the volunteer to accept.
+     */
     const acceptVolunteer = async (userId: string) => {
         try {
             const res = await fetch(`${API_BASE_URL}/api/accept-volunteer`, {
@@ -83,6 +108,10 @@ export default function DashboardScreen() {
         }
     };
 
+    /**
+     * Promotes a volunteer to coordinator by email.
+     * Only available to coordinators.
+     */
     const addCoordinator = async () => {
         if (!email) {
             Alert.alert('Error', 'Email required');
@@ -109,6 +138,11 @@ export default function DashboardScreen() {
         }
     };
 
+    /**
+     * Opens the SMS app to reply to a volunteer.
+     * @param tel - Phone number
+     * @param naam - Name
+     */
     const handleVolunteerReply = (tel: string, naam: string) => {
         const message = `Beste ${naam},\n\n`;
         const url = Platform.OS === 'ios'
@@ -117,16 +151,31 @@ export default function DashboardScreen() {
         Linking.openURL(url);
     };
 
+    /**
+     * Opens the mail app to reply to a contact message.
+     * @param email - Email address
+     * @param subject - Subject of the message
+     */
     const handleContactReply = (email: string, subject: string) => {
         const mailto = `mailto:${email}?subject=Re: ${encodeURIComponent(subject)}&body=${encodeURIComponent('Beste,\n\n')}`;
         Linking.openURL(mailto);
     };
 
+    /**
+     * Opens the mail app to reply to a volunteer by email.
+     * @param mail - Email address
+     * @param naam - Name
+     */
     const handleVolunteerMail = (mail: string, naam: string) => {
         const mailto = `mailto:${mail}?subject=Re: Vrijwilligersaanvraag&body=${encodeURIComponent('Beste ' + naam + ',\n\n')}`;
         Linking.openURL(mailto);
     };
 
+    /**
+     * Deletes an item (pending volunteer, contact, volunteer, or help request).
+     * @param type - The type of item
+     * @param id - The MongoDB _id
+     */
     const handleDelete = async (type: 'pending' | 'contact' | 'volunteer' | 'helprequest', id: string) => {
         let url = '';
         if (type === 'pending') url = `${API_BASE_URL}/api/pending-volunteers/${id}`;
@@ -147,6 +196,11 @@ export default function DashboardScreen() {
         }
     };
 
+    /**
+     * Shows a confirmation dialog before deleting an item.
+     * @param type - The type of item
+     * @param id - The MongoDB _id
+     */
     const confirmDelete = (type: 'pending' | 'contact' | 'volunteer' | 'helprequest', id: string) => {
         Alert.alert('Verwijderen', 'Weet je zeker dat je dit item wilt verwijderen?', [
             { text: 'Annuleer', style: 'cancel' },
@@ -435,12 +489,13 @@ const styles = StyleSheet.create({
     },
     inputSmall: {
         width: '100%',
-        height: 32,
+        height: 36,
         borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 6,
         marginBottom: 8,
         paddingHorizontal: 8,
+        paddingVertical: 6,
         fontSize: 13,
         backgroundColor: '#f9f9f9',
     },

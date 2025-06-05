@@ -1,9 +1,14 @@
+// Express backend server for BachelorApp
+// Handles all API endpoints for volunteers, coordinators, help requests, and contacts.
+// Only accessible/usable by Buren voor Buren Tienen.
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
+const fetch = require('node-fetch');
 
 const app = express();
 app.use(cors());
@@ -12,6 +17,11 @@ app.use(bodyParser.json());
 const uri = process.env.MONGODB_URI;
 
 // Register endpoint
+/**
+ * Register a new volunteer.
+ * Expects: { email, password }
+ * Returns: 201 on success, 409 if user exists, 400 if missing fields.
+ */
 app.post('/api/register', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -43,6 +53,11 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Coordinator login endpoint
+/**
+ * Coordinator login endpoint.
+ * Expects: { email, password }
+ * Returns: token, role, email on success. 401/400 on error.
+ */
 app.post('/api/coordinator-login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -76,6 +91,10 @@ app.post('/api/coordinator-login', async (req, res) => {
 });
 
 // Get pending volunteers
+/**
+ * Get all pending volunteers (not yet accepted).
+ * Returns: Array of pending volunteers.
+ */
 app.get('/api/pending-volunteers', async (req, res) => {
   const client = new MongoClient(uri, {
     serverApi: {
@@ -98,6 +117,11 @@ app.get('/api/pending-volunteers', async (req, res) => {
 });
 
 // Accept volunteer
+/**
+ * Accept a pending volunteer by userId.
+ * Expects: { userId }
+ * Returns: success or error.
+ */
 app.post('/api/accept-volunteer', async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(400).json({ error: 'userId required' });
@@ -126,9 +150,15 @@ app.post('/api/accept-volunteer', async (req, res) => {
 });
 
 // Add coordinator
+/**
+ * Promote a volunteer to coordinator by email.
+ * Expects: { email }
+ * Only works if user exists and is a volunteer.
+ * Returns: success or error.
+ */
 app.post('/api/add-coordinator', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
   const client = new MongoClient(uri, {
     serverApi: {
       version: ServerApiVersion.v1,
@@ -141,10 +171,16 @@ app.post('/api/add-coordinator', async (req, res) => {
     const db = client.db('bachelorapp');
     const users = db.collection('users');
     const existing = await users.findOne({ email });
-    if (existing) return res.status(409).json({ error: 'User already exists' });
-    const hashed = await bcrypt.hash(password, 10);
-    await users.insertOne({ email, password: hashed, role: 'coordinator', accepted: true });
-    res.json({ success: true });
+    if (!existing) return res.status(404).json({ error: 'Gebruiker bestaat niet' });
+    if (existing.role === 'coordinator') return res.status(409).json({ error: 'Gebruiker is al coördinator' });
+    if (existing.role === 'volunteer') {
+      await users.updateOne(
+        { email },
+        { $set: { role: 'coordinator', accepted: true } }
+      );
+      return res.json({ success: true });
+    }
+    return res.status(400).json({ error: 'Kan alleen vrijwilligers tot coördinator maken' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {
@@ -153,6 +189,11 @@ app.post('/api/add-coordinator', async (req, res) => {
 });
 
 // Volunteer login endpoint
+/**
+ * Volunteer login endpoint.
+ * Expects: { email, password }
+ * Returns: token, role, email, userId on success. 401/400 on error.
+ */
 app.post('/api/volunteer-login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -186,6 +227,11 @@ app.post('/api/volunteer-login', async (req, res) => {
 });
 
 // Volunteer accept help request endpoint
+/**
+ * Volunteer accepts a help request.
+ * Expects: { requestId, volunteerId }
+ * Returns: success or error.
+ */
 app.post('/api/accept-help-request', async (req, res) => {
   const { requestId, volunteerId } = req.body;
   if (!requestId || !volunteerId) {
@@ -219,6 +265,10 @@ app.post('/api/accept-help-request', async (req, res) => {
 });
 
 // Get all help requests
+/**
+ * Get all help requests.
+ * Returns: Array of help requests.
+ */
 app.get('/api/help-requests', async (req, res) => {
   const client = new MongoClient(uri, {
     serverApi: {
@@ -241,6 +291,10 @@ app.get('/api/help-requests', async (req, res) => {
 });
 
 // Get all contacts
+/**
+ * Get all contacts.
+ * Returns: Array of contact messages.
+ */
 app.get('/api/contacts', async (req, res) => {
   const client = new MongoClient(uri, {
     serverApi: {
@@ -263,6 +317,10 @@ app.get('/api/contacts', async (req, res) => {
 });
 
 // Get all volunteers
+/**
+ * Get all volunteers.
+ * Returns: Array of volunteers.
+ */
 app.get('/api/volunteers', async (req, res) => {
   const client = new MongoClient(uri, {
     serverApi: {
@@ -285,6 +343,10 @@ app.get('/api/volunteers', async (req, res) => {
 });
 
 // Delete pending volunteer
+/**
+ * Delete a pending volunteer by id.
+ * Returns: success or error.
+ */
 app.delete('/api/pending-volunteers/:id', async (req, res) => {
   const { id } = req.params;
   console.log(`[DELETE] /api/pending-volunteers/${id}`);
@@ -315,6 +377,10 @@ app.delete('/api/pending-volunteers/:id', async (req, res) => {
 });
 
 // Delete contact
+/**
+ * Delete a contact by id.
+ * Returns: success or error.
+ */
 app.delete('/api/contacts/:id', async (req, res) => {
   const { id } = req.params;
   console.log(`[DELETE] /api/contacts/${id}`);
@@ -345,6 +411,10 @@ app.delete('/api/contacts/:id', async (req, res) => {
 });
 
 // Delete volunteer
+/**
+ * Delete a volunteer by id.
+ * Returns: success or error.
+ */
 app.delete('/api/volunteers/:id', async (req, res) => {
   const { id } = req.params;
   console.log(`[DELETE] /api/volunteers/${id}`);
@@ -375,6 +445,10 @@ app.delete('/api/volunteers/:id', async (req, res) => {
 });
 
 // Delete help request
+/**
+ * Delete a help request by id.
+ * Returns: success or error.
+ */
 app.delete('/api/help-requests/:id', async (req, res) => {
   const { id } = req.params;
   console.log(`[DELETE] /api/help-requests/${id}`);
@@ -403,6 +477,147 @@ app.delete('/api/help-requests/:id', async (req, res) => {
     await client.close();
   }
 });
+
+// Cancel accepted help request
+/**
+ * Cancel an accepted help request by volunteer (email).
+ * Expects: { email }
+ * Returns: success or error.
+ */
+app.post('/api/help-requests/:id/cancel', async (req, res) => {
+  const { id } = req.params;
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const requests = db.collection('helpRequests');
+    // Alleen de vrijwilliger die geaccepteerd heeft mag annuleren
+    const result = await requests.updateOne(
+      { _id: new ObjectId(id), acceptedBy: email },
+      { $set: { accepted: false, acceptedBy: null } }
+    );
+    if (result.modifiedCount === 1) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Help request not found or not accepted by this volunteer.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// Accept help request by volunteer (email)
+/**
+ * Accept a help request by volunteer (email).
+ * Expects: { email }
+ * Returns: success or error.
+ */
+app.post('/api/help-requests/:id/accept', async (req, res) => {
+  const { id } = req.params;
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const requests = db.collection('helpRequests');
+    const result = await requests.updateOne(
+      { _id: new ObjectId(id), accepted: { $ne: true } },
+      { $set: { accepted: true, acceptedBy: email } }
+    );
+    if (result.modifiedCount === 1) {
+    res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Help request not found or already accepted.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  } finally {
+    await client.close();
+  }
+});
+
+// --- PUSH NOTIFICATION POLLING ---
+let lastKnownRequestId = null;
+
+/**
+ * Send a push notification to a volunteer.
+ * @param expoPushToken - Expo push token
+ * @param message - Notification message
+ */
+async function sendPushNotification(expoPushToken, message) {
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      to: expoPushToken,
+      sound: 'default',
+      title: 'Nieuwe hulpaanvraag!',
+      body: message,
+      data: { type: 'new_help_request' },
+    }),
+  });
+}
+
+/**
+ * Poll for new help requests and send push notifications.
+ * Runs every 10 seconds.
+ */
+async function pollNewHelpRequests() {
+  const client = new MongoClient(uri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
+  try {
+    await client.connect();
+    const db = client.db('FinalWork');
+    const requests = db.collection('helpRequests');
+    // Vind de nieuwste aanvraag
+    const newest = await requests.find().sort({ _id: -1 }).limit(1).toArray();
+    if (newest.length > 0) {
+      const newestId = newest[0]._id.toString();
+      if (lastKnownRequestId && newestId !== lastKnownRequestId) {
+        // Nieuwe aanvraag gevonden!
+        const volunteers = await db.collection('volunteers').find({ expoPushToken: { $exists: true, $ne: null } }).toArray();
+        for (const v of volunteers) {
+          if (v.expoPushToken) {
+            sendPushNotification(v.expoPushToken, 'Er is een nieuwe hulpaanvraag binnengekomen!');
+          }
+        }
+      }
+      lastKnownRequestId = newestId;
+    }
+  } catch (err) {
+    console.error('Polling error:', err);
+  } finally {
+    await client.close();
+  }
+}
+
+setInterval(pollNewHelpRequests, 10000); // elke 10 seconden
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Backend API running on port ${PORT}`)); 

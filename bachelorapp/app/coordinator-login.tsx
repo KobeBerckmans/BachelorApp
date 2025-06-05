@@ -1,15 +1,27 @@
+// Login screen for coordinators.
+// Handles user input, validation, and coordinator login API call.
+
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * CoordinatorLoginScreen
+ * Allows a coordinator to log in with email and password.
+ * Handles form state and login logic.
+ */
 export default function CoordinatorLoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+    /**
+     * Handles the login form submission for coordinators.
+     * Calls the backend API to authenticate the coordinator.
+     */
     const handleLogin = async () => {
         setLoading(true);
         try {

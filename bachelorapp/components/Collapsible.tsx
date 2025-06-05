@@ -1,3 +1,6 @@
+// Collapsible component for showing/hiding content with animation.
+// Used for expandable sections in the UI.
+
 import { PropsWithChildren, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 
@@ -7,15 +10,27 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+/**
+ * Collapsible
+ * Shows or hides its children with a toggle button.
+ * @param props.children - Content to show/hide
+ */
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const theme = useColorScheme() ?? 'light';
+
+  /**
+   * Toggles the collapsed state.
+   */
+  const toggle = () => {
+    setIsOpen((value) => !value);
+  };
 
   return (
     <ThemedView>
       <TouchableOpacity
         style={styles.heading}
-        onPress={() => setIsOpen((value) => !value)}
+        onPress={toggle}
         activeOpacity={0.8}>
         <IconSymbol
           name="chevron.right"
