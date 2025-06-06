@@ -103,5 +103,10 @@ Below are some of the most relevant resources and documentation used during the 
 8. [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
 9. [Expo Push Notifications Guide](https://docs.expo.dev/push-notifications/overview/)
 10. [Material Icons Reference](https://fonts.google.com/icons)
+11. [Stack Overflow: How to use AsyncStorage in React Native](https://stackoverflow.com/questions/55399548/how-to-use-asyncstorage-in-react-native)
+12. [Stack Overflow: How to connect to MongoDB with Node.js](https://stackoverflow.com/questions/13405129/how-do-i-connect-to-mongodb-with-node-js)
+13. [Stack Overflow: How to use React Navigation with TypeScript](https://stackoverflow.com/questions/61214337/how-to-use-react-navigation-with-typescript)
+14. [Stack Overflow: How to send push notifications with Expo](https://stackoverflow.com/questions/50269538/how-to-send-push-notifications-with-expo)
+15. [ChatGPT by OpenAI](https://chat.openai.com/) — Used for code generation, debugging, and architectural advice throughout the project.
 
 These resources were essential for implementing authentication, navigation, database integration, push notifications, and UI/UX best practices in the BachelorApp project. 
