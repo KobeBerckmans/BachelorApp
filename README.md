@@ -87,4 +87,21 @@ This project and the accompanying website are open source **exclusively for the 
 - Contact: kobe.berckmans@hotmail.com
 
 ---
-For questions, contact Kobe Berckmans. Enjoy using the app! 
+For questions, contact Kobe Berckmans. Enjoy using the app!
+
+## 📚 Sources
+
+Below are some of the most relevant resources and documentation used during the development of this project:
+
+1. [React Native Documentation](https://reactnative.dev/docs/getting-started)
+2. [Expo Documentation](https://docs.expo.dev/)
+3. [MongoDB Node.js Driver Documentation](https://mongodb.github.io/node-mongodb-native/)
+4. [Express.js Documentation](https://expressjs.com/)
+5. [React Navigation Documentation](https://reactnavigation.org/docs/getting-started)
+6. [AsyncStorage for React Native](https://react-native-async-storage.github.io/async-storage/docs/install/)
+7. [Node.js Official Documentation](https://nodejs.org/en/docs)
+8. [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+9. [Expo Push Notifications Guide](https://docs.expo.dev/push-notifications/overview/)
+10. [Material Icons Reference](https://fonts.google.com/icons)
+
+These resources were essential for implementing authentication, navigation, database integration, push notifications, and UI/UX best practices in the BachelorApp project. 
