@@ -93,6 +93,8 @@ export default function BevestigdScreen() {
                                 <Text style={styles.helpValue}>{item.uur}</Text>
                                 <Text style={styles.helpLabel}>Adres:</Text>
                                 <Text style={styles.helpValue}>{item.adres}</Text>
+                                <Text style={styles.helpLabel}>Telefoon:</Text>
+                                <Text style={styles.helpValue}>{item.telefoon}</Text>
                                 <Text style={styles.helpLabel}>Bericht:</Text>
                                 <Text style={styles.helpValue}>{item.bericht}</Text>
                             </View>

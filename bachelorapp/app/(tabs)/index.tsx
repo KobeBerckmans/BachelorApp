@@ -284,9 +284,9 @@ export default function HomeScreen() {
                   <Text style={styles.helpLabelModern}>Adres:</Text>
                   <Text style={styles.helpValueModern}>{item.adres}</Text>
                 </>}
-                {(!item.adres && (item.straat || item.nummer || item.gemeente)) && <>
-                  <Text style={styles.helpLabelModern}>Adres:</Text>
-                  <Text style={styles.helpValueModern}>{[item.straat, item.nummer, item.gemeente].filter(Boolean).join(' ')}</Text>
+                {(!item.adres && (item.straat || item.nummer || item.telefoon)) && <>
+                  <Text style={styles.helpLabelModern}>Telefoon:</Text>
+                  <Text style={styles.helpValueModern}>{item.telefoon}</Text>
                 </>}
                 {item.bericht && <>
                   <Text style={styles.helpLabelModern}>Bericht:</Text>
