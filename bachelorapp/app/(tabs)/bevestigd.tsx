@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator, Platform, Alert } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator, Platform, Alert, Linking } from 'react-native';
 import { API_BASE_URL } from '../../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,6 +9,7 @@ export default function BevestigdScreen() {
     const [loading, setLoading] = useState(true);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
     const [role, setRole] = useState<string | null>(null);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const fetchHelpRequests = async () => {
         setLoading(true);
@@ -22,7 +23,12 @@ export default function BevestigdScreen() {
             setUserEmail(email);
             setRole(userRole);
         }
-        fetch(`${API_BASE_URL}/api/help-requests`)
+        fetch(`${API_BASE_URL}/api/help-requests`, {
+            headers: {
+                ...(email && { 'x-user-email': email }),
+                ...(userRole && { 'x-user-role': userRole })
+            }
+        })
             .then(res => res.json())
             .then(data => {
                 if (userRole === 'coordinator') {
@@ -39,6 +45,12 @@ export default function BevestigdScreen() {
 
     useEffect(() => {
         fetchHelpRequests();
+        intervalRef.current = setInterval(() => {
+            fetchHelpRequests();
+        }, 10000);
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
     }, []);
 
     const handleCancel = async (id: string) => {
@@ -85,18 +97,51 @@ export default function BevestigdScreen() {
                                 </TouchableOpacity>
                             </View>
                             <View style={{ marginBottom: 4 }}>
+                                <Text style={styles.helpLabel}>Naam:</Text>
+                                <Text style={styles.helpValue}>{item.naam}</Text>
                                 <Text style={styles.helpLabel}>Soort:</Text>
                                 <Text style={styles.helpValue}>{item.soort}</Text>
+                                <Text style={styles.helpLabel}>Bericht:</Text>
+                                <Text style={styles.helpValue}>{item.bericht}</Text>
                                 <Text style={styles.helpLabel}>Datum:</Text>
                                 <Text style={styles.helpValue}>{item.datum}</Text>
                                 <Text style={styles.helpLabel}>Uur:</Text>
                                 <Text style={styles.helpValue}>{item.uur}</Text>
-                                <Text style={styles.helpLabel}>Adres:</Text>
-                                <Text style={styles.helpValue}>{item.adres}</Text>
-                                <Text style={styles.helpLabel}>Telefoon:</Text>
-                                <Text style={styles.helpValue}>{item.telefoon}</Text>
-                                <Text style={styles.helpLabel}>Bericht:</Text>
-                                <Text style={styles.helpValue}>{item.bericht}</Text>
+                                <Text style={styles.helpLabel}>Contrei:</Text>
+                                <Text style={styles.helpValue}>{item.contrei}</Text>
+                                {typeof item.straat === 'string' && item.straat.trim() !== '' && (
+                                    <>
+                                        <Text style={styles.helpLabel}>Straat:</Text>
+                                        <Text style={styles.helpValue}>{item.straat}</Text>
+                                    </>
+                                )}
+                                {typeof item.nummer === 'string' && item.nummer.trim() !== '' && (
+                                    <>
+                                        <Text style={styles.helpLabel}>Nummer:</Text>
+                                        <Text style={styles.helpValue}>{item.nummer}</Text>
+                                    </>
+                                )}
+                                {typeof item.telefoon === 'string' && item.telefoon.trim() !== '' && (
+                                    <View style={{ flexDirection: 'row', alignItems: 'baseline', marginTop: 8, marginBottom: 2 }}>
+                                        <Text style={[styles.helpLabel, { fontSize: 15, lineHeight: 22 }]}>Telefoon:</Text>
+                                        <Text style={[styles.helpValue, { marginLeft: 4, fontSize: 15, lineHeight: 22 }]} numberOfLines={1} ellipsizeMode="tail">{item.telefoon}</Text>
+                                        <View style={{ flex: 1 }} />
+                                        <TouchableOpacity
+                                            style={{
+                                                backgroundColor: '#E2725B',
+                                                paddingVertical: 4,
+                                                paddingHorizontal: 12,
+                                                borderRadius: 16,
+                                                minWidth: 70,
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                            }}
+                                            onPress={() => Linking.openURL(`sms:${item.telefoon}`)}
+                                        >
+                                            <Text style={{ color: '#fff', fontFamily: 'CocogooseProTrial', fontSize: 13, letterSpacing: 1 }}>Bericht</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </View>
                             {item.acceptedBy && (
                                 <View style={{ marginTop: 8, backgroundColor: '#E2725B22', borderRadius: 8, padding: 6, alignSelf: 'flex-start' }}>

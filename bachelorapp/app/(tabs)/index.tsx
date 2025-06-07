@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, FlatList, ActivityIndicator, Platform, ScrollView, Modal, Pressable, Alert, Animated } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, FlatList, ActivityIndicator, Platform, ScrollView, Modal, Pressable, Alert, Animated, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -47,29 +47,44 @@ export default function HomeScreen() {
 
   const fetchHelpRequestsWithBanner = () => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/help-requests`)
-      .then(res => res.json())
-      .then(data => {
-        if (prevRequestCount.current && data.length > prevRequestCount.current) {
-          setShowBanner(true);
-          Animated.timing(bannerAnim, {
-            toValue: 0,
-            duration: 350,
-            useNativeDriver: true,
-          }).start();
-          setTimeout(() => {
+    (async () => {
+      const userStr = await AsyncStorage.getItem('user');
+      let email = null;
+      let role = null;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        email = user.email;
+        role = user.role;
+      }
+      fetch(`${API_BASE_URL}/api/help-requests`, {
+        headers: {
+          ...(email && { 'x-user-email': email }),
+          ...(role && { 'x-user-role': role })
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (prevRequestCount.current && data.length > prevRequestCount.current) {
+            setShowBanner(true);
             Animated.timing(bannerAnim, {
-              toValue: -80,
+              toValue: 0,
               duration: 350,
               useNativeDriver: true,
-            }).start(() => setShowBanner(false));
-          }, 3500);
-        }
-        prevRequestCount.current = data.length;
-        setHelpRequests(data);
-      })
-      .catch(() => setHelpRequests([]))
-      .finally(() => setLoading(false));
+            }).start();
+            setTimeout(() => {
+              Animated.timing(bannerAnim, {
+                toValue: -80,
+                duration: 350,
+                useNativeDriver: true,
+              }).start(() => setShowBanner(false));
+            }, 3500);
+          }
+          prevRequestCount.current = data.length;
+          setHelpRequests(data);
+        })
+        .catch(() => setHelpRequests([]))
+        .finally(() => setLoading(false));
+    })();
   };
 
   useEffect(() => {
@@ -274,28 +289,50 @@ export default function HomeScreen() {
                 )}
               </View>
               <View style={{ marginBottom: 4 }}>
+                <Text style={styles.helpLabelModern}>Naam:</Text>
+                <Text style={styles.helpValueModern}>{item.naam}</Text>
                 <Text style={styles.helpLabelModern}>Soort:</Text>
                 <Text style={styles.helpValueModern}>{item.soort}</Text>
+                <Text style={styles.helpLabelModern}>Bericht:</Text>
+                <Text style={styles.helpValueModern}>{item.bericht}</Text>
                 <Text style={styles.helpLabelModern}>Datum:</Text>
                 <Text style={styles.helpValueModern}>{item.datum}</Text>
                 <Text style={styles.helpLabelModern}>Uur:</Text>
                 <Text style={styles.helpValueModern}>{item.uur}</Text>
-                {item.adres && <>
-                  <Text style={styles.helpLabelModern}>Adres:</Text>
-                  <Text style={styles.helpValueModern}>{item.adres}</Text>
-                </>}
-                {(!item.adres && (item.straat || item.nummer || item.telefoon)) && <>
-                  <Text style={styles.helpLabelModern}>Telefoon:</Text>
-                  <Text style={styles.helpValueModern}>{item.telefoon}</Text>
-                </>}
-                {item.bericht && <>
-                  <Text style={styles.helpLabelModern}>Bericht:</Text>
-                  <Text style={styles.helpValueModern}>{item.bericht}</Text>
-                </>}
-                {item.contrei && <>
-                  <Text style={styles.helpLabelModern}>Contrei:</Text>
-                  <Text style={styles.helpValueModern}>{item.contrei}</Text>
-                </>}
+                <Text style={styles.helpLabelModern}>Contrei:</Text>
+                <Text style={styles.helpValueModern}>{item.contrei}</Text>
+                {/* Straat, nummer en telefoon alleen tonen als ze bestaan */}
+                {typeof item.straat === 'string' && item.straat.trim() !== '' && (
+                  <>
+                    <Text style={styles.helpLabelModern}>Straat:</Text>
+                    <Text style={styles.helpValueModern}>{item.straat}</Text>
+                  </>
+                )}
+                {typeof item.nummer === 'string' && item.nummer.trim() !== '' && (
+                  <>
+                    <Text style={styles.helpLabelModern}>Nummer:</Text>
+                    <Text style={styles.helpValueModern}>{item.nummer}</Text>
+                  </>
+                )}
+                {typeof item.telefoon === 'string' && item.telefoon.trim() !== '' && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, marginBottom: 2 }}>
+                    <Text style={styles.helpLabelModern}>Telefoon:</Text>
+                    <Text style={[styles.helpValueModern, { marginLeft: 4 }]}>{item.telefoon}</Text>
+                    <View style={{ flex: 1 }} />
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: '#E2725B',
+                        paddingVertical: 4,
+                        paddingHorizontal: 12,
+                        borderRadius: 16,
+                        alignSelf: 'center',
+                      }}
+                      onPress={() => Linking.openURL(`sms:${item.telefoon}`)}
+                    >
+                      <Text style={{ color: '#fff', fontFamily: 'CocogooseProTrial', fontSize: 13, letterSpacing: 1 }}>Bericht</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
               {role === 'coordinator' && item.acceptedBy && (
                 <View style={styles.acceptedByBoxModern}>
