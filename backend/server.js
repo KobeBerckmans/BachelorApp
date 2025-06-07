@@ -268,8 +268,11 @@ app.post('/api/accept-help-request', async (req, res) => {
 /**
  * Get all help requests.
  * Returns: Array of help requests.
+ * Only includes 'telefoon' if user is coordinator or accepted volunteer.
  */
 app.get('/api/help-requests', async (req, res) => {
+  const userEmail = req.header('x-user-email');
+  const userRole = req.header('x-user-role');
   const client = new MongoClient(uri, {
     serverApi: {
       version: ServerApiVersion.v1,
@@ -282,7 +285,17 @@ app.get('/api/help-requests', async (req, res) => {
     const db = client.db('FinalWork');
     const requests = db.collection('helpRequests');
     const allRequests = await requests.find({}).toArray();
-    res.json(allRequests);
+    // Map over requests and remove 'telefoon' unless allowed
+    const filtered = allRequests.map(req => {
+      // Always show for coordinator
+      if (userRole === 'coordinator') return req;
+      // Show for accepted volunteer
+      if (userRole === 'volunteer' && req.acceptedBy && req.acceptedBy === userEmail) return req;
+      // Otherwise, remove telefoon
+      const { telefoon, ...rest } = req;
+      return rest;
+    });
+    res.json(filtered);
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {
