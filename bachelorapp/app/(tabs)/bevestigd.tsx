@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator, Platform, Alert, Linking } from 'react-native';
-import { API_BASE_URL } from '../../constants/api';
+import { getApiBaseUrl } from '../../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function BevestigdScreen() {
@@ -13,6 +13,7 @@ export default function BevestigdScreen() {
 
     const fetchHelpRequests = async () => {
         setLoading(true);
+        const API_BASE_URL = getApiBaseUrl();
         const userStr = await AsyncStorage.getItem('user');
         let email = null;
         let userRole = null;
@@ -54,12 +55,16 @@ export default function BevestigdScreen() {
     }, []);
 
     const handleCancel = async (id: string) => {
-        if (!userEmail) return;
+        if (!userEmail || !role) return;
         setCancellingId(id);
         try {
+            const API_BASE_URL = getApiBaseUrl();
             const res = await fetch(`${API_BASE_URL}/api/help-requests/${id}/cancel`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-user-role': role
+                },
                 body: JSON.stringify({ email: userEmail }),
             });
             if (res.ok) {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, FlatList, ActivityIndicator, Platform, ScrollView, Modal, Pressable, Alert, Animated, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
-import { API_BASE_URL } from '../../constants/api';
+import { getApiBaseUrl } from '../../constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useRegisterPushToken from '../../hooks/useRegisterPushToken';
 
@@ -48,6 +48,7 @@ export default function HomeScreen() {
   const fetchHelpRequestsWithBanner = () => {
     setLoading(true);
     (async () => {
+      const API_BASE_URL = getApiBaseUrl();
       const userStr = await AsyncStorage.getItem('user');
       let email = null;
       let role = null;
@@ -104,6 +105,7 @@ export default function HomeScreen() {
     if (!userEmail) return;
     setAcceptingId(id);
     try {
+      const API_BASE_URL = getApiBaseUrl();
       const res = await fetch(`${API_BASE_URL}/api/help-requests/${id}/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,12 +125,16 @@ export default function HomeScreen() {
   };
 
   const handleCancel = async (id: string) => {
-    if (!userEmail) return;
+    if (!userEmail || !role) return;
     setAcceptingId(id);
     try {
+      const API_BASE_URL = getApiBaseUrl();
       const res = await fetch(`${API_BASE_URL}/api/help-requests/${id}/cancel`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': role
+        },
         body: JSON.stringify({ email: userEmail }),
       });
       if (res.ok) {
@@ -146,6 +152,7 @@ export default function HomeScreen() {
 
   const handleDeleteHelpRequest = async (id: string) => {
     try {
+      const API_BASE_URL = getApiBaseUrl();
       const res = await fetch(`${API_BASE_URL}/api/help-requests/${id}`, { method: 'DELETE' });
       if (res.ok) {
         fetchHelpRequestsWithBanner();

@@ -493,13 +493,14 @@ app.delete('/api/help-requests/:id', async (req, res) => {
 
 // Cancel accepted help request
 /**
- * Cancel an accepted help request by volunteer (email).
+ * Cancel an accepted help request by volunteer (email) or coordinator.
  * Expects: { email }
  * Returns: success or error.
  */
 app.post('/api/help-requests/:id/cancel', async (req, res) => {
   const { id } = req.params;
   const { email } = req.body;
+  const userRole = req.header('x-user-role');
   if (!email) return res.status(400).json({ error: 'Email required' });
   const client = new MongoClient(uri, {
     serverApi: {
@@ -512,15 +513,29 @@ app.post('/api/help-requests/:id/cancel', async (req, res) => {
     await client.connect();
     const db = client.db('FinalWork');
     const requests = db.collection('helpRequests');
-    // Alleen de vrijwilliger die geaccepteerd heeft mag annuleren
-    const result = await requests.updateOne(
-      { _id: new ObjectId(id), acceptedBy: email },
-      { $set: { accepted: false, acceptedBy: null } }
-    );
-    if (result.modifiedCount === 1) {
-      res.json({ success: true });
+    
+    // If user is coordinator, they can cancel any request
+    if (userRole === 'coordinator') {
+      const result = await requests.updateOne(
+        { _id: new ObjectId(id), accepted: true },
+        { $set: { accepted: false, acceptedBy: null } }
+      );
+      if (result.modifiedCount === 1) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: 'Help request not found or not accepted.' });
+      }
     } else {
-      res.status(404).json({ error: 'Help request not found or not accepted by this volunteer.' });
+      // For volunteers, only allow canceling their own accepted requests
+      const result = await requests.updateOne(
+        { _id: new ObjectId(id), acceptedBy: email },
+        { $set: { accepted: false, acceptedBy: null } }
+      );
+      if (result.modifiedCount === 1) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: 'Help request not found or not accepted by this volunteer.' });
+      }
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
